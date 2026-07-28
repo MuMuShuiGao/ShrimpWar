@@ -1,0 +1,11 @@
+{
+  "name": "shrimpwar",
+  "private": true,
+  "scripts": {
+    "css:build": "tailwindcss -i ./app/static/css/input.css -o ./app/static/css/output.css",
+    "css:watch": "tailwindcss -i ./app/static/css/input.css -o ./app/static/css/output.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.0"
+  }
+}

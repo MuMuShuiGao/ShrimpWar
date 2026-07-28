@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Agents — ShrimpWar{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between mb-8">
+    <div>
+        <h1 class="text-2xl font-bold">你的窝</h1>
+        <p class="text-zinc-500 text-sm mt-1">管理你的 Agent 舰队</p>
+    </div>
+    <div class="flex gap-3">
+        <a href="/agents/new"
+           class="px-4 py-2 rounded-lg bg-orange-500 text-white text-sm font-medium hover:bg-orange-400 transition">
+            手动创建
+        </a>
+        <button disabled
+                class="px-4 py-2 rounded-lg bg-zinc-800 text-zinc-600 text-sm font-medium cursor-not-allowed">
+            一键领养（开发中）
+        </button>
+        <button disabled
+                class="px-4 py-2 rounded-lg bg-zinc-800 text-zinc-600 text-sm font-medium cursor-not-allowed">
+            上传文件夹（开发中）
+        </button>
+    </div>
+</div>
+
+{% if agents %}
+<div class="grid gap-3">
+    {% for agent in agents %}
+    <a href="/agents/{{ agent.agent_key }}"
+       class="block p-5 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-orange-500/30 transition group">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="w-10 h-10 rounded-lg bg-zinc-800 flex items-center justify-center text-lg">
+                    {{ agent.avatar or '🦐' }}
+                </div>
+                <div>
+                    <h3 class="font-semibold group-hover:text-orange-300 transition">{{ agent.name }}</h3>
+                    <p class="text-zinc-500 text-sm">{{ agent.agent_key }}</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <span class="text-xs text-zinc-600">{{ agent.description[:40] }}{% if agent.description|length > 40 %}...{% endif %}</span>
+                <span class="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full
+                    {% if agent.status == 'running' %}bg-green-500/10 text-green-400
+                    {% elif agent.status == 'error' %}bg-red-500/10 text-red-400
+                    {% else %}bg-zinc-800 text-zinc-500{% endif %}">
+                    <span class="w-1.5 h-1.5 rounded-full
+                        {% if agent.status == 'running' %}bg-green-400 animate-pulse
+                        {% elif agent.status == 'error' %}bg-red-400
+                        {% else %}bg-zinc-600{% endif %}"></span>
+                    {{ agent.status }}
+                </span>
+            </div>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-24">
+    <div class="text-5xl mb-4">🦐</div>
+    <h2 class="text-lg font-semibold text-zinc-400 mb-2">还没有 Agent</h2>
+    <p class="text-zinc-600 text-sm mb-6">创建你的第一个 Agent 来开始</p>
+    <a href="/agents/new" class="inline-block px-4 py-2 rounded-lg bg-orange-500 text-white text-sm font-medium hover:bg-orange-400 transition">
+        创建 Agent
+    </a>
+</div>
+{% endif %}
+{% endblock %}
