@@ -5,26 +5,21 @@
 ## 快速启动
 
 ```bash
-# 1. 创建虚拟环境（一次性）
-python -m venv .venv
+# 1. 安装 uv（如已安装跳过）
+pip install uv
 
-# 2. 激活虚拟环境
-#    Windows (Git Bash):
-source .venv/Scripts/activate
-#    Windows (CMD / PowerShell):
-.venv\Scripts\activate
+# 2. 创建虚拟环境 + 安装依赖（一次性）
+uv venv
+uv pip install -r requirements.txt
 
-# 3. 安装 Python 依赖
-pip install -r requirements.txt
-
-# 4. （可选）安装 Tailwind CSS 并编译
+# 3. （可选）安装 Tailwind CSS 并编译
 npm install
 npm run css:build
 
-# 5. 启动服务
-python -m uvicorn app.main:app --reload
+# 4. 启动服务
+uv run uvicorn app.main:app --reload
 
-# 6. 打开浏览器
+# 5. 打开浏览器
 # http://localhost:8000 → 自动跳转到 Agent 列表页
 ```
 
