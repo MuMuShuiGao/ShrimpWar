@@ -18,14 +18,14 @@ router = APIRouter(tags=["agents-pages"])
 async def page_list_agents(request: Request):
     agents = await list_agents(request.app.state.db)
     return request.app.state.templates.TemplateResponse(
-        "agents/list.html", {"request": request, "agents": agents}
+        request, "agents/list.html", {"request": request, "agents": agents}
     )
 
 
 @router.get("/agents/new")
 async def page_create_agent(request: Request):
     return request.app.state.templates.TemplateResponse(
-        "agents/create.html", {"request": request}
+        request, "agents/create.html", {"request": request}
     )
 
 
@@ -41,7 +41,7 @@ async def handle_create_agent(request: Request):
     existing = await get_agent_by_key(db, payload.agent_key)
     if existing:
         return request.app.state.templates.TemplateResponse(
-            "agents/create.html", {
+            request, "agents/create.html", {
                 "request": request,
                 "error": "Agent key 已被占用",
                 "agent_key": payload.agent_key,
@@ -115,7 +115,7 @@ async def page_status_fragment(request: Request, agent_key: str):
     }.get(display_status, "bg-zinc-600")
 
     return request.app.state.templates.TemplateResponse(
-        "components/status_badge.html", {
+        request, "components/status_badge.html", {
             "request": request,
             "status_class": status_class,
             "dot_class": dot_class,
@@ -139,7 +139,7 @@ async def _detail_context(request: Request, agent_key: str, output: str = ""):
     display_status = runner_status if runner_status != "idle" else agent.status
 
     return request.app.state.templates.TemplateResponse(
-        "agents/detail.html", {
+        request, "agents/detail.html", {
             "request": request,
             "agent": agent,
             "soul_content": read_file(workspace_path, "SOUL.md"),
