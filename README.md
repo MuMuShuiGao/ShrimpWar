@@ -12,7 +12,7 @@ pip install uv
 uv venv
 uv pip install -r requirements.txt
 
-# 3. （可选）安装 Tailwind CSS 并编译
+# 3. 安装 Tailwind CSS 并编译
 npm install
 npm run css:build
 
