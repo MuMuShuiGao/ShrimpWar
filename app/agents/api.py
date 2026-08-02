@@ -4,6 +4,7 @@ from fastapi import APIRouter, Request, HTTPException
 from app.agents.models import AgentCreate, AgentUpdate, AgentResponse, StatusResponse, RunRequest
 from app.agents.service import (
     create_agent,
+    delete_agent,
     get_agent_by_key,
     list_agents,
     update_agent,
@@ -81,3 +82,15 @@ async def api_stop_agent(request: Request, agent_key: str):
     await runner.stop(agent_key)
     await update_agent_status(request.app.state.db, agent_key, "idle")
     return {"status": "idle", "agent_key": agent_key}
+
+
+@router.delete("/{agent_key}", status_code=204)
+async def api_delete_agent(request: Request, agent_key: str):
+    deleted = await delete_agent(
+        request.app.state.db,
+        request.app.state.workspaces_root,
+        agent_key,
+        runner=request.app.state.runner,
+    )
+    if not deleted:
+        raise HTTPException(status_code=404)

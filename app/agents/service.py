@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 import uuid
 from datetime import datetime, timezone
 
@@ -39,6 +40,7 @@ async def create_agent(
         agent_key=payload.agent_key,
         avatar="",
         status="idle",
+        workspace_path=workspace_path,
         created_at=now,
         updated_at=now,
     )
@@ -105,6 +107,36 @@ async def update_agent_status(
         (status, now, agent_key),
     )
     await db.commit()
+
+
+async def delete_agent(
+    db: aiosqlite.Connection,
+    workspaces_root: str,
+    agent_key: str,
+    runner=None,
+) -> bool:
+    agent = await get_agent_by_key(db, agent_key)
+    if agent is None:
+        return False
+
+    # Stop runner if active
+    if runner is not None and runner.is_running(agent_key):
+        await runner.stop(agent_key)
+
+    # Remove workspace directory
+    workspace_path = os.path.join(workspaces_root, agent_key)
+    if os.path.exists(workspace_path):
+        shutil.rmtree(workspace_path)
+
+    # Delete conversations first (FK doesn't have CASCADE to agents)
+    await db.execute(
+        "DELETE FROM conversations WHERE agent_id = (SELECT id FROM agents WHERE agent_key = ?)",
+        (agent_key,),
+    )
+    await db.execute("DELETE FROM agents WHERE agent_key = ?", (agent_key,))
+    await db.commit()
+
+    return True
 
 
 def _row_to_response(row) -> AgentResponse:

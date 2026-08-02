@@ -4,6 +4,7 @@ from fastapi.responses import RedirectResponse
 from app.agents.models import AgentCreate, AgentUpdate
 from app.agents.service import (
     create_agent,
+    delete_agent,
     get_agent_by_key,
     list_agents,
     update_agent,
@@ -197,3 +198,16 @@ async def handle_stop_agent(request: Request, agent_key: str):
     await update_agent_status(request.app.state.db, agent_key, "idle")
 
     return await _detail_context(request, agent_key, output=output)
+
+
+@router.post("/agents/{agent_key}/delete")
+async def handle_delete_agent(request: Request, agent_key: str):
+    deleted = await delete_agent(
+        request.app.state.db,
+        request.app.state.workspaces_root,
+        agent_key,
+        runner=request.app.state.runner,
+    )
+    if not deleted:
+        raise HTTPException(status_code=404)
+    return RedirectResponse(url=f"/agents?deleted={agent_key}", status_code=303)
