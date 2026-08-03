@@ -11,6 +11,7 @@ from app.agents.api import router as agents_api_router
 from app.agents.router import router as agents_router
 from app.chat.api import router as chat_api_router
 from app.chat.router import router as chat_router
+from app.pages.router import router as pages_router
 from app.runner.manager import RunnerManager
 
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "shrimpwar.db")
@@ -41,13 +42,8 @@ app = FastAPI(title="ShrimpWar", lifespan=lifespan)
 
 app.mount("/static", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "static")), name="static")
 
+app.include_router(pages_router)
 app.include_router(agents_router)
 app.include_router(chat_router)
 app.include_router(agents_api_router, prefix="/api")
 app.include_router(chat_api_router, prefix="/api")
-
-
-@app.get("/")
-async def root():
-    from fastapi.responses import RedirectResponse
-    return RedirectResponse(url="/agents")

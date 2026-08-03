@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}首页 — ShrimpWar{% endblock %}
+{% block header_title %}首页{% endblock %}
+
+{% block content %}
+<!-- Welcome banner -->
+<div class="rounded-xl bg-gradient-to-br from-orange-500/10 via-zinc-900 to-zinc-900 border border-zinc-800 p-8 mb-8">
+    <h1 class="text-2xl font-bold mb-2">欢迎回来 👋</h1>
+    <p class="text-zinc-400 max-w-2xl">
+        ShrimpWar 是你的自托管多智能体协作平台。在这里创建、管理和运行你的 AI Agent 舰队，
+        让多个 Agent 协作完成复杂任务。
+    </p>
+</div>
+
+<!-- Stats cards -->
+<div class="grid grid-cols-3 gap-4 mb-8">
+    <div class="rounded-xl bg-zinc-900 border border-zinc-800 p-5">
+        <div class="text-3xl font-bold text-orange-400 mb-1">{{ agent_count }}</div>
+        <div class="text-sm text-zinc-500">Agent 数量</div>
+    </div>
+    <div class="rounded-xl bg-zinc-900 border border-zinc-800 p-5">
+        <div class="text-3xl font-bold text-zinc-500 mb-1">0</div>
+        <div class="text-sm text-zinc-500">团队数量</div>
+    </div>
+    <div class="rounded-xl bg-zinc-900 border border-zinc-800 p-5">
+        <div class="text-3xl font-bold text-zinc-500 mb-1">--</div>
+        <div class="text-sm text-zinc-500">今日 Token 消耗</div>
+    </div>
+</div>
+
+<!-- Quick actions -->
+<h2 class="text-lg font-semibold mb-4">快捷操作</h2>
+<div class="grid grid-cols-4 gap-3">
+    <a href="/agents/new"
+       class="rounded-xl bg-zinc-900 border border-zinc-800 hover:border-orange-500/30 transition p-5 group">
+        <div class="text-2xl mb-2">🐣</div>
+        <div class="font-medium text-sm group-hover:text-orange-300 transition">快速领养</div>
+        <div class="text-xs text-zinc-600 mt-1">创建一个新的 Agent</div>
+    </a>
+    <a href="/agents/new"
+       class="rounded-xl bg-zinc-900 border border-zinc-800 hover:border-orange-500/30 transition p-5 group">
+        <div class="text-2xl mb-2">📥</div>
+        <div class="font-medium text-sm group-hover:text-orange-300 transition">导入 Agent</div>
+        <div class="text-xs text-zinc-600 mt-1">从文件夹导入配置</div>
+    </a>
+    <a href="/architectures/mine"
+       class="rounded-xl bg-zinc-900 border border-zinc-800 hover:border-orange-500/30 transition p-5 group">
+        <div class="text-2xl mb-2">👥</div>
+        <div class="font-medium text-sm group-hover:text-orange-300 transition">创建团队</div>
+        <div class="text-xs text-zinc-600 mt-1">组建 Agent 协作团队</div>
+    </a>
+    <a href="/market"
+       class="rounded-xl bg-zinc-900 border border-zinc-800 hover:border-orange-500/30 transition p-5 group">
+        <div class="text-2xl mb-2">🔍</div>
+        <div class="font-medium text-sm group-hover:text-orange-300 transition">浏览市场</div>
+        <div class="text-xs text-zinc-600 mt-1">探索 Agent 世界</div>
+    </a>
+</div>
+{% endblock %}

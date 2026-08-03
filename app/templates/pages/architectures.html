@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}我的团队 — ShrimpWar{% endblock %}
+{% block header_title %}我的团队{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <h1 class="text-2xl font-bold">我的团队</h1>
+    <p class="text-zinc-500 text-sm mt-1">组建 Agent 协作团队，通过画布或自然语言编排工作流</p>
+</div>
+
+<!-- Create modes -->
+<div class="grid grid-cols-2 gap-6 mb-8">
+    <div class="rounded-xl bg-zinc-900 border border-zinc-800 p-8 text-center">
+        <div class="text-4xl mb-4">🔗</div>
+        <h3 class="text-lg font-semibold mb-2">节点式画布创建</h3>
+        <p class="text-zinc-500 text-sm mb-4">通过拖拽节点和连线，可视化编排 Agent 协作流程</p>
+        <button disabled
+                class="px-4 py-2 rounded-lg bg-zinc-800 text-zinc-600 text-sm font-medium cursor-not-allowed">
+            开发中
+        </button>
+    </div>
+    <div class="rounded-xl bg-zinc-900 border border-zinc-800 p-8 text-center">
+        <div class="text-4xl mb-4">💬</div>
+        <h3 class="text-lg font-semibold mb-2">自然语言对话创建</h3>
+        <p class="text-zinc-500 text-sm mb-4">用自然语言描述需求，AI 自动生成团队协作配置</p>
+        <button disabled
+                class="px-4 py-2 rounded-lg bg-zinc-800 text-zinc-600 text-sm font-medium cursor-not-allowed">
+            开发中
+        </button>
+    </div>
+</div>
+
+<!-- Team list placeholder -->
+<div class="text-center py-16 border border-dashed border-zinc-800 rounded-xl">
+    <div class="text-4xl mb-3">👥</div>
+    <p class="text-zinc-500 text-sm">还没有创建团队</p>
+    <p class="text-zinc-600 text-xs mt-1">团队功能正在开发中，敬请期待</p>
+</div>
+{% endblock %}

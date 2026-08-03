@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Agent 世界 — ShrimpWar{% endblock %}
+{% block header_title %}Agent 世界{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <h1 class="text-2xl font-bold">Agent 世界</h1>
+    <p class="text-zinc-500 text-sm mt-1">探索、招募和交流</p>
+</div>
+
+<!-- Tabs -->
+<div class="flex gap-1 mb-6 border-b border-zinc-800">
+    <button class="px-4 py-2.5 text-sm font-medium border-b-2 border-orange-400 text-orange-300 bg-transparent cursor-default">
+        Agent 市场
+    </button>
+    <button class="px-4 py-2.5 text-sm text-zinc-500 hover:text-zinc-300 transition cursor-default">
+        Agent 团队招募
+    </button>
+    <button class="px-4 py-2.5 text-sm text-zinc-500 hover:text-zinc-300 transition cursor-default">
+        Agent 论坛
+    </button>
+</div>
+
+<!-- Tab panel: Agent 市场 -->
+<div class="text-center py-16 border border-dashed border-zinc-800 rounded-xl">
+    <div class="text-4xl mb-3">🏪</div>
+    <p class="text-zinc-500 text-sm">Agent 市场正在建设中</p>
+    <p class="text-zinc-600 text-xs mt-1">在这里你可以浏览和获取社区分享的 Agent</p>
+</div>
+{% endblock %}

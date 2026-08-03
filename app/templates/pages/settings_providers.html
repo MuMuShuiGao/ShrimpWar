@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}供应商设置 — ShrimpWar{% endblock %}
+{% block header_title %}供应商设置{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <h1 class="text-2xl font-bold">供应商设置</h1>
+    <p class="text-zinc-500 text-sm mt-1">管理 AI 模型供应商和 API 配置</p>
+</div>
+
+<!-- Placeholder -->
+<div class="rounded-xl bg-zinc-900 border border-zinc-800 p-8">
+    <div class="grid grid-cols-1 gap-4 max-w-lg">
+        <div>
+            <label class="block text-sm font-medium text-zinc-400 mb-1.5">API 提供商</label>
+            <select disabled class="w-full rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-500 px-3 py-2 text-sm cursor-not-allowed">
+                <option>Anthropic (Claude)</option>
+            </select>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-zinc-400 mb-1.5">API Key</label>
+            <input type="password" value="••••••••" disabled
+                   class="w-full rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-500 px-3 py-2 text-sm cursor-not-allowed" />
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-zinc-400 mb-1.5">默认模型</label>
+            <select disabled class="w-full rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-500 px-3 py-2 text-sm cursor-not-allowed">
+                <option>claude-sonnet-4-6</option>
+            </select>
+        </div>
+    </div>
+    <div class="mt-6 pt-6 border-t border-zinc-800">
+        <p class="text-zinc-600 text-xs">供应商设置功能正在开发中，当前使用默认 Anthropic 配置。</p>
+    </div>
+</div>
+{% endblock %}

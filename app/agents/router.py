@@ -17,10 +17,8 @@ router = APIRouter(tags=["agents-pages"])
 
 @router.get("/agents")
 async def page_list_agents(request: Request):
-    agents = await list_agents(request.app.state.db)
-    return request.app.state.templates.TemplateResponse(
-        request, "agents/list.html", {"request": request, "agents": agents}
-    )
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url="/my-den", status_code=301)
 
 
 @router.get("/agents/new")

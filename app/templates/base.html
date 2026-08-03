@@ -6,18 +6,123 @@
     <title>{% block title %}ShrimpWar{% endblock %}</title>
     <link rel="stylesheet" href="/static/css/output.css">
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+    <style>
+        :root {
+            --sidebar-width: 240px;
+        }
+    </style>
 </head>
-<body class="min-h-screen">
-    <nav class="border-b border-zinc-800 bg-zinc-900/50 backdrop-blur">
-        <div class="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
-            <a href="/agents" class="text-lg font-bold tracking-tight text-orange-400">ShrimpWar</a>
-            <a href="/agents/new" class="text-sm px-3 py-1.5 rounded-lg bg-orange-500/20 text-orange-300 hover:bg-orange-500/30 transition">
-                + 新建 Agent
-            </a>
+<body class="min-h-screen flex">
+    <!-- Sidebar -->
+    <aside id="sidebar"
+           class="flex-shrink-0 bg-zinc-900 border-r border-zinc-800 flex flex-col h-screen sticky top-0 select-none"
+           style="width: var(--sidebar-width)">
+        <div class="h-14 flex items-center px-5 border-b border-zinc-800">
+            <span class="text-lg font-bold tracking-tight text-orange-400">ShrimpWar</span>
         </div>
-    </nav>
-    <main class="max-w-6xl mx-auto px-6 py-8">
-        {% block content %}{% endblock %}
-    </main>
+
+        <nav class="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
+            {% set nav_items = [
+                ('/', '首页', '🏠'),
+                ('/my-den', '我的 Agent 窝', '🦐'),
+                ('/architectures/mine', '我的团队', '👥'),
+                ('/market', 'Agent 世界', '🌍'),
+            ] %}
+            {% for href, label, icon in nav_items %}
+            <a href="{{ href }}"
+               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition
+                      {{ 'bg-orange-500/10 text-orange-300 font-medium' if active_page == href else 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200' }}">
+                <span class="text-base w-5 text-center">{{ icon }}</span>
+                <span>{{ label }}</span>
+            </a>
+            {% endfor %}
+
+            <div class="pt-4 mt-4 border-t border-zinc-800">
+                <a href="/settings/providers"
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition
+                          {{ 'bg-orange-500/10 text-orange-300 font-medium' if active_page == '/settings/providers' else 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200' }}">
+                    <span class="text-base w-5 text-center">⚙️</span>
+                    <span>供应商设置</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- Resize handle -->
+        <div id="sidebar-handle"
+             class="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-orange-500/50 transition-colors z-10"
+             style="position: absolute; right: -2px;"></div>
+    </aside>
+
+    <!-- Main area -->
+    <div class="flex-1 flex flex-col min-w-0">
+        <!-- Header -->
+        <header class="h-14 bg-black border-b border-zinc-800 flex items-center justify-between px-6 flex-shrink-0 sticky top-0 z-20">
+            <div class="flex items-center gap-4">
+                <span class="text-sm text-zinc-500">
+                    {% block header_title %}{% endblock %}
+                </span>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="/agents/new"
+                   class="text-sm px-3 py-1.5 rounded-lg bg-orange-500/20 text-orange-300 hover:bg-orange-500/30 transition">
+                    + 新建 Agent
+                </a>
+            </div>
+        </header>
+
+        <!-- Main content -->
+        <main class="flex-1 max-w-7xl mx-auto px-6 py-8 w-full">
+            {% block content %}{% endblock %}
+        </main>
+
+        <!-- Footer -->
+        <footer class="border-t border-zinc-800 bg-zinc-900/50 px-6 py-4 flex-shrink-0">
+            <div class="max-w-7xl mx-auto flex items-center justify-between text-xs text-zinc-600">
+                <span>ShrimpWar — 自托管多智能体协作平台</span>
+                <span>v0.1.0</span>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+    (function() {
+        const sidebar = document.getElementById('sidebar');
+        const handle = document.getElementById('sidebar-handle');
+        let isResizing = false;
+        let startX, startWidth;
+
+        const stored = localStorage.getItem('sidebar-width');
+        if (stored) {
+            const w = parseInt(stored, 10);
+            if (w >= 160 && w <= 420) {
+                sidebar.style.setProperty('--sidebar-width', w + 'px');
+            }
+        }
+
+        handle.addEventListener('mousedown', function(e) {
+            isResizing = true;
+            startX = e.clientX;
+            startWidth = sidebar.offsetWidth;
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+            e.preventDefault();
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            if (!isResizing) return;
+            const diff = e.clientX - startX;
+            const newWidth = Math.min(420, Math.max(160, startWidth + diff));
+            sidebar.style.setProperty('--sidebar-width', newWidth + 'px');
+        });
+
+        document.addEventListener('mouseup', function() {
+            if (!isResizing) return;
+            isResizing = false;
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+            localStorage.setItem('sidebar-width', sidebar.offsetWidth);
+        });
+    })();
+    </script>
 </body>
 </html>
