@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}我的团队 — ShrimpWar{% endblock %}
+{% block header_title %}我的团队{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <h1 class="text-2xl font-bold">我的团队</h1>
+    <p class="text-zinc-500 text-sm mt-1">组建 Agent 协作团队，通过画布编排工作流</p>
+</div>
+
+<div class="mb-8">
+    <div class="grid grid-cols-2 gap-6">
+        <a href="/teams/new"
+           class="rounded-xl bg-zinc-900 border border-zinc-800 p-8 text-center hover:border-orange-500/50 hover:bg-zinc-800/50 transition group cursor-pointer">
+            <div class="text-4xl mb-4">🔗</div>
+            <h3 class="text-lg font-semibold mb-2 group-hover:text-orange-300 transition">节点式画布创建</h3>
+            <p class="text-zinc-500 text-sm">拖拽节点和连线，可视化编排 Agent 协作流程</p>
+        </a>
+        <div class="rounded-xl bg-zinc-900 border border-zinc-800 p-8 text-center">
+            <div class="text-4xl mb-4">💬</div>
+            <h3 class="text-lg font-semibold mb-2">自然语言对话创建</h3>
+            <p class="text-zinc-500 text-sm mb-4">用自然语言描述需求，AI 自动生成团队协作配置</p>
+            <button disabled
+                    class="px-4 py-2 rounded-lg bg-zinc-800 text-zinc-600 text-sm font-medium cursor-not-allowed">
+                开发中
+            </button>
+        </div>
+    </div>
+</div>
+
+{% if teams %}
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    {% for team in teams %}
+    <div class="rounded-xl bg-zinc-900 border border-zinc-800 p-5 hover:border-zinc-700 transition group">
+        <div class="flex items-start justify-between mb-3">
+            <a href="/teams/{{ team.id }}" class="font-semibold text-zinc-200 hover:text-orange-300 transition truncate">
+                {{ team.name }}
+            </a>
+            <span class="text-xs px-2 py-0.5 rounded-full flex-shrink-0 ml-2
+                {% if team.status == 'draft' %}bg-zinc-800 text-zinc-500
+                {% elif team.status == 'running' %}bg-green-500/10 text-green-400
+                {% else %}bg-zinc-800 text-zinc-500{% endif %}">
+                {{ team.status }}
+            </span>
+        </div>
+        <p class="text-zinc-500 text-sm mb-3 line-clamp-2">{{ team.description or '暂无描述' }}</p>
+        <div class="flex items-center gap-2">
+            <a href="/teams/{{ team.id }}"
+               class="text-xs px-3 py-1.5 rounded-lg bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-200 transition">
+                编辑
+            </a>
+            <a href="/teams/{{ team.id }}/run"
+               class="text-xs px-3 py-1.5 rounded-lg bg-orange-500/10 text-orange-300 hover:bg-orange-500/20 transition">
+                运行
+            </a>
+            <form action="/teams/{{ team.id }}/delete" method="POST" class="inline ml-auto"
+                  onsubmit="return confirm('确定删除团队「{{ team.name }}」吗？')">
+                <button type="submit"
+                        class="text-xs px-3 py-1.5 rounded-lg bg-zinc-800 text-zinc-600 hover:bg-red-500/10 hover:text-red-400 transition">
+                    删除
+                </button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-16 border border-dashed border-zinc-800 rounded-xl">
+    <div class="text-4xl mb-3">👥</div>
+    <p class="text-zinc-500 text-sm">还没有创建团队</p>
+    <p class="text-zinc-600 text-xs mt-1">点击上方"节点式画布创建"开始</p>
+</div>
+{% endif %}
+{% endblock %}

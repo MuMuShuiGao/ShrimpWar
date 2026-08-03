@@ -25,7 +25,7 @@
             {% set nav_items = [
                 ('/', '首页', '🏠'),
                 ('/my-den', '我的 Agent 窝', '🦐'),
-                ('/architectures/mine', '我的团队', '👥'),
+                ('/teams', '我的团队', '👥'),
                 ('/market', 'Agent 世界', '🌍'),
             ] %}
             {% for href, label, icon in nav_items %}
@@ -84,6 +84,7 @@
         </footer>
     </div>
 
+    {% block scripts %}{% endblock %}
     <script>
     (function() {
         const sidebar = document.getElementById('sidebar');

@@ -37,12 +37,8 @@ async def page_my_den(request: Request):
 
 @router.get("/architectures/mine")
 async def page_architectures(request: Request):
-    return request.app.state.templates.TemplateResponse(
-        request, "pages/architectures.html", {
-            "request": request,
-            "active_page": "/architectures/mine",
-        }
-    )
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url="/teams", status_code=301)
 
 
 @router.get("/market")

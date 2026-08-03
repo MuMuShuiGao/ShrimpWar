@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block title %}{{ '编辑' if team else '新建' }}团队 — ShrimpWar{% endblock %}
+{% block header_title %}{{ '编辑团队' if team else '新建团队' }}{% endblock %}
+
+{% block content %}
+<div id="canvas-app" class="flex gap-0 h-full" style="min-height: calc(100vh - 200px);">
+    <!-- Node palette sidebar -->
+    <div id="palette" class="w-56 flex-shrink-0 bg-zinc-900 border border-zinc-800 rounded-xl p-4 mr-4">
+        <h4 class="text-sm font-medium text-zinc-300 mb-4">节点面板</h4>
+        <div class="space-y-2">
+            <div draggable="true" data-node-type="agent"
+                 class="palette-node p-3 rounded-lg bg-zinc-800 border border-zinc-700 cursor-grab hover:border-orange-500/50 transition active:cursor-grabbing">
+                <div class="text-xs font-medium text-zinc-300">Agent 节点</div>
+                <div class="text-xs text-zinc-600 mt-1">执行任务的 Agent</div>
+            </div>
+        </div>
+        <div class="mt-6 pt-4 border-t border-zinc-800">
+            <div class="text-xs text-zinc-600 mb-2">固定节点 (不可拖拽)</div>
+            <div class="text-xs text-zinc-500">Start — 用户输入入口</div>
+            <div class="text-xs text-zinc-500 mt-1">End — 最终输出出口</div>
+        </div>
+        <div class="mt-6 pt-4 border-t border-zinc-800">
+            <label class="text-xs text-zinc-500 block mb-1">团队名称</label>
+            <input id="team-name" type="text" value="{{ team.name if team else '新团队' }}"
+                   class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-1.5 text-sm text-zinc-200 focus:outline-none focus:border-orange-500/50 mb-2">
+            <label class="text-xs text-zinc-500 block mb-1">描述</label>
+            <input id="team-desc" type="text" value="{{ team.description if team else '' }}" placeholder="可选"
+                   class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-1.5 text-sm text-zinc-200 focus:outline-none focus:border-orange-500/50 mb-4">
+            <div class="flex gap-2">
+                <button onclick="saveTeam()"
+                        class="flex-1 px-4 py-2 rounded-lg bg-orange-500/20 text-orange-300 hover:bg-orange-500/30 transition text-sm font-medium">
+                    保存
+                </button>
+                <button onclick="goRun()"
+                        class="flex-1 px-4 py-2 rounded-lg bg-green-500/10 text-green-400 hover:bg-green-500/20 transition text-sm font-medium">
+                    运行
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Canvas -->
+    <div class="flex-1 relative">
+        <div id="canvas-container"
+             class="w-full h-full bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden relative"
+             style="min-height: 600px;">
+            <svg id="canvas-svg" width="4000" height="3000" style="cursor: grab; display: block;">
+                <g id="canvas-group">
+                    <!-- Connections (bottom layer) -->
+                    <g id="connections-group"></g>
+                    <!-- Nodes (middle layer) -->
+                    <g id="nodes-group"></g>
+                    <!-- Temporary connection line while dragging (top layer) -->
+                    <line id="temp-connection" x1="0" y1="0" x2="0" y2="0"
+                          stroke="rgb(251, 146, 60)" stroke-width="2" stroke-dasharray="6,3" style="display:none" />
+                </g>
+            </svg>
+            <!-- Zoom controls -->
+            <div class="absolute bottom-4 right-4 flex gap-1 z-10">
+                <button onclick="zoomIn()" class="w-8 h-8 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-400 hover:text-zinc-200 hover:border-zinc-600 transition text-sm">+</button>
+                <button onclick="zoomOut()" class="w-8 h-8 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-400 hover:text-zinc-200 hover:border-zinc-600 transition text-sm">-</button>
+                <button onclick="resetZoom()" class="w-8 h-8 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-400 hover:text-zinc-200 hover:border-zinc-600 transition text-xs">R</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Node config drawer (slides in from right) -->
+<div id="config-overlay" class="fixed inset-0 bg-black/50 z-40 hidden" onclick="closeDrawer()"></div>
+<div id="config-drawer"
+     class="fixed right-0 top-0 h-full w-96 bg-zinc-900 border-l border-zinc-800 z-50 transform translate-x-full transition-transform duration-200 overflow-y-auto">
+    <div class="p-6">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-semibold">节点配置</h3>
+            <button onclick="closeDrawer()" class="text-zinc-500 hover:text-zinc-300 text-xl">&times;</button>
+        </div>
+
+        <input type="hidden" id="cfg-node-id">
+
+        <label class="block text-sm text-zinc-400 mb-1">标签</label>
+        <input id="cfg-label" type="text"
+               class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-orange-500/50 mb-4">
+
+        <!-- Start/End node info (shown only for start/end nodes) -->
+        <div class="cfg-startend-only mb-4 p-3 rounded-lg bg-zinc-800/50 border border-zinc-700/50">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-xs text-zinc-500">节点类型</span>
+                <span id="cfg-type-display" class="text-sm text-zinc-300 font-medium"></span>
+            </div>
+            <div class="flex items-center justify-between">
+                <span class="text-xs text-zinc-500">输出 Key</span>
+                <span id="cfg-key-display" class="text-sm text-zinc-300 font-mono"></span>
+            </div>
+        </div>
+
+        <label class="block text-sm text-zinc-400 mb-1 cfg-agent-only">角色描述 (role)</label>
+        <input id="cfg-role" type="text" placeholder="例如：理解任务并拆解要求"
+               class="cfg-agent-only w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-orange-500/50 mb-4">
+
+        <label class="block text-sm text-zinc-400 mb-1 cfg-agent-only">类型 (kind)</label>
+        <select id="cfg-kind"
+                class="cfg-agent-only w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-orange-500/50 mb-4">
+            <option value="worker">worker — 执行者</option>
+            <option value="aggregator">aggregator — 汇总者</option>
+            <option value="orchestrator">orchestrator — 编排者</option>
+        </select>
+
+        <label class="block text-sm text-zinc-400 mb-1 cfg-agent-only">绑定 Agent</label>
+        <select id="cfg-agent"
+                class="cfg-agent-only w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-orange-500/50 mb-4">
+            <option value="">-- 选择 Agent --</option>
+            {% for a in agents %}
+            <option value="{{ a.id }}">{{ a.name }} ({{ a.agent_key }})</option>
+            {% endfor %}
+        </select>
+
+        <label class="block text-sm text-zinc-400 mb-1 cfg-agent-only">inputTemplate</label>
+        <textarea id="cfg-template" rows="6"
+                  class="cfg-agent-only w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-200 font-mono focus:outline-none focus:border-orange-500/50 mb-6"></textarea>
+
+        <div class="flex gap-2">
+            <button onclick="saveNodeConfig()"
+                    class="flex-1 px-4 py-2 rounded-lg bg-orange-500/20 text-orange-300 hover:bg-orange-500/30 transition text-sm font-medium">
+                保存
+            </button>
+            <button id="cfg-delete-btn" onclick="deleteNode()"
+                    class="px-4 py-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition text-sm font-medium">
+                删除节点
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+{% if team %}
+window.__INITIAL_DSL__ = {{ team.dsl | safe }};
+window.__TEAM_ID__ = "{{ team.id }}";
+{% else %}
+window.__INITIAL_DSL__ = null;
+window.__TEAM_ID__ = null;
+{% endif %}
+</script>
+<script src="/static/js/canvas.js"></script>
+{% endblock %}

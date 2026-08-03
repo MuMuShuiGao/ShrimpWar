@@ -34,5 +34,18 @@ async def init_db(db: aiosqlite.Connection):
             created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
         )
     """)
+    await db.execute("""
+        CREATE TABLE IF NOT EXISTS teams (
+            id TEXT PRIMARY KEY,
+            user_id TEXT NOT NULL DEFAULT 'admin',
+            name TEXT NOT NULL,
+            description TEXT NOT NULL DEFAULT '',
+            dsl TEXT NOT NULL DEFAULT '{}',
+            orchestrator_agent_id TEXT,
+            status TEXT NOT NULL DEFAULT 'draft',
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
     await db.execute("PRAGMA foreign_keys = ON")
     await db.commit()

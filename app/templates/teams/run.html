@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+{% block title %}运行 — {{ team.name }} — ShrimpWar{% endblock %}
+{% block header_title %}运行工作流{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <a href="/teams/{{ team.id }}" class="text-sm text-zinc-500 hover:text-zinc-300 transition">&larr; 返回画布</a>
+    <h1 class="text-2xl font-bold mt-2">{{ team.name }}</h1>
+    <p class="text-zinc-500 text-sm mt-1">工作流执行监控</p>
+</div>
+
+<div class="rounded-xl bg-zinc-900 border border-zinc-800 p-6 mb-6">
+    <label class="block text-sm text-zinc-400 mb-2">输入任务</label>
+    <div class="flex gap-3">
+        <input id="task-input"
+               type="text"
+               placeholder="描述你想要完成的任务..."
+               class="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2.5 text-sm text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-orange-500/50">
+        <button id="run-btn"
+                onclick="startRun()"
+                class="px-6 py-2.5 rounded-lg bg-orange-500/20 text-orange-300 hover:bg-orange-500/30 transition text-sm font-medium">
+            运行
+        </button>
+        <button id="stop-btn"
+                onclick="location.reload()"
+                class="hidden px-6 py-2.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition text-sm font-medium">
+            停止
+        </button>
+    </div>
+</div>
+
+<div id="status-panel" class="rounded-xl bg-zinc-900 border border-zinc-800 p-6 hidden">
+    <div class="flex items-center gap-3 mb-4">
+        <div id="status-dot" class="w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse"></div>
+        <span id="status-text" class="text-sm text-zinc-300">运行中...</span>
+    </div>
+
+    <div id="node-list" class="space-y-2"></div>
+
+    <div id="final-output" class="hidden mt-6 pt-6 border-t border-zinc-800">
+        <h4 class="text-sm font-medium text-zinc-300 mb-3">最终输出</h4>
+        <pre class="bg-zinc-800 rounded-lg p-4 text-sm text-zinc-300 whitespace-pre-wrap max-h-96 overflow-y-auto"></pre>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function startRun() {
+    const task = document.getElementById('task-input').value.trim();
+    if (!task) return;
+
+    document.getElementById('run-btn').classList.add('hidden');
+    document.getElementById('stop-btn').classList.remove('hidden');
+    document.getElementById('status-panel').classList.remove('hidden');
+    document.getElementById('node-list').innerHTML = '';
+
+    fetchSSE(task);
+}
+
+async function fetchSSE(task) {
+    const response = await fetch(`/api/teams/{{ team.id }}/run`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ task: task })
+    });
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop();
+
+        let event = '';
+        for (const line of lines) {
+            if (line.startsWith('event: ')) {
+                event = line.slice(7).trim();
+            } else if (line.startsWith('data: ')) {
+                const data = JSON.parse(line.slice(6));
+                handleSSE(event, data);
+            }
+        }
+    }
+
+    document.getElementById('run-btn').classList.remove('hidden');
+    document.getElementById('stop-btn').classList.add('hidden');
+}
+
+function handleSSE(event, data) {
+    const nodeList = document.getElementById('node-list');
+    const statusDot = document.getElementById('status-dot');
+    const statusText = document.getElementById('status-text');
+
+    switch (event) {
+        case 'workflow_started':
+            statusText.textContent = `运行中 (${data.totalNodes} 个节点)...`;
+            break;
+
+        case 'node_started':
+            updateNode(data.nodeId, data.type, data.label, 'running');
+            break;
+
+        case 'node_completed':
+            updateNode(data.nodeId, data.type || '', data.label || '', 'completed', data.output);
+            break;
+
+        case 'node_failed':
+            updateNode(data.nodeId, data.type || '', data.label || '', 'failed', '', data.error);
+            statusDot.className = 'w-2.5 h-2.5 rounded-full bg-red-400';
+            statusText.textContent = `执行失败: ${data.error || '未知错误'}`;
+            break;
+
+        case 'workflow_completed':
+            statusDot.className = 'w-2.5 h-2.5 rounded-full bg-green-400';
+            statusText.textContent = '执行完成';
+            if (data.finalOutput) {
+                const finalDiv = document.getElementById('final-output');
+                finalDiv.classList.remove('hidden');
+                finalDiv.querySelector('pre').textContent = data.finalOutput;
+            }
+            break;
+
+        case 'workflow_failed':
+            statusDot.className = 'w-2.5 h-2.5 rounded-full bg-red-400';
+            statusText.textContent = `工作流失败: ${data.error || ''}`;
+            break;
+    }
+}
+
+function updateNode(nodeId, type, label, status, output, error) {
+    const nodeList = document.getElementById('node-list');
+    let el = document.getElementById('node-' + nodeId);
+
+    if (!el) {
+        const row = document.createElement('div');
+        row.id = 'node-' + nodeId;
+        row.className = 'flex items-center gap-3 py-2 px-3 rounded-lg bg-zinc-800/50';
+        row.innerHTML = `
+            <div class="node-dot w-2 h-2 rounded-full bg-zinc-600"></div>
+            <span class="text-sm text-zinc-400 flex-1">${type || 'node'}: ${label || nodeId}</span>
+            <span class="node-status text-xs text-zinc-600">等待中</span>
+        `;
+        nodeList.appendChild(row);
+        el = row;
+    }
+
+    const dot = el.querySelector('.node-dot');
+    const statusEl = el.querySelector('.node-status');
+
+    switch (status) {
+        case 'running':
+            dot.className = 'node-dot w-2 h-2 rounded-full bg-yellow-400 animate-pulse';
+            statusEl.textContent = '执行中';
+            statusEl.className = 'node-status text-xs text-yellow-400';
+            break;
+        case 'completed':
+            dot.className = 'node-dot w-2 h-2 rounded-full bg-green-400';
+            statusEl.textContent = '完成';
+            statusEl.className = 'node-status text-xs text-green-400';
+            break;
+        case 'failed':
+            dot.className = 'node-dot w-2 h-2 rounded-full bg-red-400';
+            statusEl.textContent = '失败';
+            statusEl.className = 'node-status text-xs text-red-400';
+            if (error) {
+                const errEl = document.createElement('div');
+                errEl.className = 'text-xs text-red-400/70 mt-1 ml-8';
+                errEl.textContent = error;
+                el.appendChild(errEl);
+            }
+            break;
+    }
+}
+</script>
+{% endblock %}
